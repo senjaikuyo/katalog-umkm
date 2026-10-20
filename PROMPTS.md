@@ -75,3 +75,14 @@ Halaman `/admin/produk/baru` berhasil menggunakan `FormProduk` yang terhubung ke
 
 **Perbaikan:**
 Menghubungkan `useActionState` ke form, memvalidasi input di server, dan menghapus `CatatanBelumAktif`.
+
+## US-09 Ubah produk
+
+**Prompt:**
+Buat fitur ubah produk di `/admin/produk/[id]/ubah` yang mengambil data produk yang ada dari database, menampilkan nilai awal di form, dan menyimpan pembaruan ke database dengan autentikasi server.
+
+**Hasil:**
+Halaman `/admin/produk/[id]/ubah` berhasil memuat data lama dari Supabase, merender `FormUbahProduk`, memvalidasi data di server melalui `ubahProdukAction`, dan redirect ke `/admin`.
+
+**Perbaikan:**
+Mengganti `cariProdukContoh` dengan query Supabase `eq("id", id)`, membuat Server Action `ubahProdukAction`, dan menghapus `CatatanBelumAktif`.
