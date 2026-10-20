@@ -8,7 +8,10 @@ export default async function sitemap() {
   let ruteProduk = [];
   try {
     const supabase = createServerClient();
-    const { data } = await supabase.from("produk").select("id, created_at");
+    const { data } = await supabase
+      .from("produk")
+      .select("id, created_at")
+      .neq("aktif", false);
     if (data) {
       ruteProduk = data.map((p) => ({
         url: `${baseUrl}/produk/${p.id}`,

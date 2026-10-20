@@ -26,6 +26,7 @@ export default async function HalamanKategori({ params }) {
       .from("produk")
       .select("*")
       .eq("kategori", namaKategori)
+      .neq("aktif", false)
       .order("created_at", { ascending: false });
 
     if (error || !data || data.length === 0) {
