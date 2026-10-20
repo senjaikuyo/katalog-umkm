@@ -1,6 +1,7 @@
 import { formatRupiah } from "@/lib/format";
 import Tombol from "@/components/Tombol";
 import TombolHapusProduk from "@/components/TombolHapusProduk";
+import TombolStatusProduk from "@/components/TombolStatusProduk";
 
 export default function TabelProduk({ daftarProduk }) {
   return (
@@ -11,7 +12,8 @@ export default function TabelProduk({ daftarProduk }) {
             <th className="px-4 py-3 font-semibold">Produk</th>
             <th className="px-4 py-3 font-semibold">Kategori</th>
             <th className="px-4 py-3 font-semibold">Harga</th>
-            <th className="px-4 py-3 font-semibold">
+            <th className="px-4 py-3 font-semibold">Status</th>
+            <th className="px-4 py-3 font-semibold text-right">
               <span className="sr-only">Aksi</span>
             </th>
           </tr>
@@ -28,8 +30,10 @@ export default function TabelProduk({ daftarProduk }) {
               <td className="px-4 py-3 text-teks-lembut">{produk.kategori}</td>
               <td className="px-4 py-3">{formatRupiah(produk.harga)}</td>
               <td className="px-4 py-3">
+                <TombolStatusProduk id={produk.id} aktif={produk.aktif !== false} />
+              </td>
+              <td className="px-4 py-3">
                 <div className="flex justify-end gap-2">
-                  {/* US-09 dan US-10 (bonus): ubah dan hapus produk */}
                   <Tombol href={`/admin/produk/${produk.id}/ubah`} varian="garis">
                     Ubah
                   </Tombol>

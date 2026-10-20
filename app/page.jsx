@@ -43,7 +43,7 @@ export default async function HalamanKatalog({ searchParams }) {
     }
 
     // Query produk dengan filter
-    let query = supabase.from("produk").select("*", { count: "exact" });
+    let query = supabase.from("produk").select("*", { count: "exact" }).neq("aktif", false);
 
     if (kategoriAktif && kategoriAktif !== "Semua") {
       query = query.eq("kategori", kategoriAktif);

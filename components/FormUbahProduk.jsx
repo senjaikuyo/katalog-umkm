@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import FormProduk from "@/components/FormProduk";
 import { ubahProdukAction } from "@/app/admin/actions";
 
-export default function FormUbahProduk({ produk }) {
+export default function FormUbahProduk({ produk, daftarKategori = [] }) {
   const [state, formAction, isPending] = useActionState(ubahProdukAction, null);
 
   return (
@@ -19,6 +19,8 @@ export default function FormUbahProduk({ produk }) {
         labelTombol="Simpan perubahan"
         action={formAction}
         isPending={isPending}
+        daftarKategori={daftarKategori}
+        state={state}
       />
     </div>
   );

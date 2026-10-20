@@ -82,6 +82,64 @@ export async function gantiPasswordAction(prevState, formData) {
   }
 }
 
+async function uploadFotoProduk(fotoFile, supabase) {
+  if (!fotoFile || typeof fotoFile.size !== "number" || fotoFile.size === 0) {
+    return { url: null, error: null };
+  }
+
+  // 1. Validasi tipe file
+  const allowedMime = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/svg+xml",
+  ];
+  if (!allowedMime.includes(fotoFile.type) && !fotoFile.type.startsWith("image/")) {
+    return {
+      url: null,
+      error: "File harus berupa gambar (JPG, PNG, WebP, SVG, atau GIF).",
+    };
+  }
+
+  // 2. Validasi ukuran maksimal (5MB)
+  const MAX_SIZE = 5 * 1024 * 1024;
+  if (fotoFile.size > MAX_SIZE) {
+    return {
+      url: null,
+      error: "Ukuran file foto maksimal 5 MB.",
+    };
+  }
+
+  // 3. Upload ke Supabase Storage (bucket 'produk')
+  try {
+    const arrayBuffer = await fotoFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const safeName = fotoFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const path = `produk-${Date.now()}-${safeName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("produk")
+      .upload(path, buffer, {
+        contentType: fotoFile.type || "image/jpeg",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      return { url: null, error: `Gagal mengunggah foto: ${uploadError.message}` };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("produk").getPublicUrl(path);
+
+    return { url: publicUrl, error: null };
+  } catch (err) {
+    return { url: null, error: `Kesalahan upload: ${err.message}` };
+  }
+}
+
 export async function tambahProdukAction(prevState, formData) {
   try {
     const supabaseAuth = await createAdminAuthClient();
@@ -94,32 +152,66 @@ export async function tambahProdukAction(prevState, formData) {
       return { error: "Akses ditolak: Anda harus login sebagai admin." };
     }
 
-    const nama = formData.get("nama")?.toString().trim();
-    const hargaStr = formData.get("harga")?.toString().trim();
+    const nama = formData.get("nama")?.toString().trim() || "";
+    const hargaStr = formData.get("harga")?.toString().trim() || "";
     const kategori = formData.get("kategori")?.toString().trim() || null;
     const foto_url = formData.get("foto_url")?.toString().trim() || null;
     const deskripsi = formData.get("deskripsi")?.toString().trim() || null;
-
-    if (!nama) {
-      return { error: "Nama produk wajib diisi." };
-    }
-
-    const harga = parseInt(hargaStr, 10);
-    if (isNaN(harga) || harga < 0) {
-      return { error: "Harga harus berupa angka 0 atau lebih." };
-    }
+    const foto_file = formData.get("foto_file");
 
     const supabase = createServerClient();
+    const fieldErrors = {};
+
+    // US-34: Validasi nama produk wajib
+    if (!nama) {
+      fieldErrors.nama = "Nama produk wajib diisi.";
+    }
+
+    // US-34: Validasi harga angka positif
+    const harga = parseInt(hargaStr, 10);
+    if (isNaN(harga) || harga < 0) {
+      fieldErrors.harga = "Harga harus berupa angka 0 atau lebih.";
+    }
+
+    // US-29: Upload file foto jika dipilih
+    let fotoUrlFinal = foto_url;
+    if (foto_file && typeof foto_file.size === "number" && foto_file.size > 0) {
+      const uploadRes = await uploadFotoProduk(foto_file, supabase);
+      if (uploadRes.error) {
+        fieldErrors.foto_file = uploadRes.error;
+      } else {
+        fotoUrlFinal = uploadRes.url;
+      }
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return {
+        error: "Mohon periksa kembali kolom yang ditandai.",
+        fieldErrors,
+        values: { nama, harga: hargaStr, kategori, foto_url, deskripsi },
+      };
+    }
+
     const { error: insertError } = await supabase.from("produk").insert({
       nama,
       harga,
       kategori,
-      foto_url: foto_url || "/produk/kopi.svg",
+      foto_url: fotoUrlFinal || "/produk/kopi.svg",
       deskripsi,
     });
 
     if (insertError) {
       return { error: `Gagal menyimpan produk: ${insertError.message}` };
+    }
+
+    // Sinkronisasi kategori ke tabel kategori jika belum ada
+    if (kategori) {
+      try {
+        const slug = kategori.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "-");
+        await supabase
+          .from("kategori")
+          .upsert({ nama: kategori, slug }, { onConflict: "nama" });
+      } catch {}
     }
 
     try {
@@ -131,6 +223,7 @@ export async function tambahProdukAction(prevState, formData) {
     } catch {}
 
     revalidatePath("/admin");
+    revalidatePath("/admin/kategori");
     revalidatePath("/");
   } catch (err) {
     return { error: `Terjadi kesalahan: ${err.message}` };
@@ -152,39 +245,73 @@ export async function ubahProdukAction(prevState, formData) {
     }
 
     const id = formData.get("id")?.toString().trim();
-    const nama = formData.get("nama")?.toString().trim();
-    const hargaStr = formData.get("harga")?.toString().trim();
+    const nama = formData.get("nama")?.toString().trim() || "";
+    const hargaStr = formData.get("harga")?.toString().trim() || "";
     const kategori = formData.get("kategori")?.toString().trim() || null;
     const foto_url = formData.get("foto_url")?.toString().trim() || null;
     const deskripsi = formData.get("deskripsi")?.toString().trim() || null;
+    const foto_file = formData.get("foto_file");
 
     if (!id) {
       return { error: "ID produk tidak valid." };
     }
 
+    const supabase = createServerClient();
+    const fieldErrors = {};
+
+    // US-34: Validasi nama produk wajib
     if (!nama) {
-      return { error: "Nama produk wajib diisi." };
+      fieldErrors.nama = "Nama produk wajib diisi.";
     }
 
+    // US-34: Validasi harga angka positif
     const harga = parseInt(hargaStr, 10);
     if (isNaN(harga) || harga < 0) {
-      return { error: "Harga harus berupa angka 0 atau lebih." };
+      fieldErrors.harga = "Harga harus berupa angka 0 atau lebih.";
     }
 
-    const supabase = createServerClient();
+    // US-29: Upload file foto jika dipilih
+    let fotoUrlFinal = foto_url;
+    if (foto_file && typeof foto_file.size === "number" && foto_file.size > 0) {
+      const uploadRes = await uploadFotoProduk(foto_file, supabase);
+      if (uploadRes.error) {
+        fieldErrors.foto_file = uploadRes.error;
+      } else {
+        fotoUrlFinal = uploadRes.url;
+      }
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return {
+        error: "Mohon periksa kembali kolom yang ditandai.",
+        fieldErrors,
+        values: { id, nama, harga: hargaStr, kategori, foto_url, deskripsi },
+      };
+    }
+
     const { error: updateError } = await supabase
       .from("produk")
       .update({
         nama,
         harga,
         kategori,
-        foto_url: foto_url || "/produk/kopi.svg",
+        foto_url: fotoUrlFinal || "/produk/kopi.svg",
         deskripsi,
       })
       .eq("id", id);
 
     if (updateError) {
       return { error: `Gagal memperbarui produk: ${updateError.message}` };
+    }
+
+    // Sinkronisasi kategori ke tabel kategori jika belum ada
+    if (kategori) {
+      try {
+        const slug = kategori.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "-");
+        await supabase
+          .from("kategori")
+          .upsert({ nama: kategori, slug }, { onConflict: "nama" });
+      } catch {}
     }
 
     try {
@@ -196,6 +323,7 @@ export async function ubahProdukAction(prevState, formData) {
     } catch {}
 
     revalidatePath("/admin");
+    revalidatePath("/admin/kategori");
     revalidatePath("/");
     revalidatePath(`/produk/${id}`);
     revalidatePath(`/admin/produk/${id}/ubah`);
@@ -237,6 +365,49 @@ export async function hapusProdukAction(id) {
         user_email: user.email,
         aksi: "Hapus Produk",
         detail: `Menghapus produk ID ${id}`,
+      });
+    } catch {}
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    revalidatePath(`/produk/${id}`);
+    return { sukses: true };
+  } catch (err) {
+    return { error: `Terjadi kesalahan: ${err.message}` };
+  }
+}
+
+export async function toggleAktifProdukAction(id, statusAktif) {
+  try {
+    const supabaseAuth = await createAdminAuthClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAuth.auth.getUser();
+
+    if (userError || !user) {
+      return { error: "Akses ditolak: Anda harus login sebagai admin." };
+    }
+
+    if (!id) {
+      return { error: "ID produk tidak valid." };
+    }
+
+    const supabase = createServerClient();
+    const { error: updateError } = await supabase
+      .from("produk")
+      .update({ aktif: statusAktif })
+      .eq("id", id);
+
+    if (updateError) {
+      return { error: `Gagal memperbarui status: ${updateError.message}` };
+    }
+
+    try {
+      await supabase.from("aktivitas_log").insert({
+        user_email: user.email,
+        aksi: "Ubah Status Produk",
+        detail: `Mengubah status aktif produk ID ${id} menjadi ${statusAktif ? "Aktif" : "Nonaktif"}`,
       });
     } catch {}
 

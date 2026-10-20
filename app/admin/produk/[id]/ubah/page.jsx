@@ -10,6 +10,7 @@ export default async function HalamanUbahProduk({ params }) {
   const { id } = await params;
 
   let produk = null;
+  let daftarKategori = [];
   try {
     const supabase = createServerClient();
     const { data, error } = await supabase
@@ -22,6 +23,19 @@ export default async function HalamanUbahProduk({ params }) {
       notFound();
     }
     produk = data;
+
+    const { data: katData } = await supabase
+      .from("kategori")
+      .select("nama")
+      .order("nama", { ascending: true });
+    if (katData && katData.length > 0) {
+      daftarKategori = katData.map((k) => k.nama);
+    } else {
+      const { data: pData } = await supabase.from("produk").select("kategori");
+      if (pData) {
+        daftarKategori = Array.from(new Set(pData.map((p) => p.kategori).filter(Boolean)));
+      }
+    }
   } catch (err) {
     notFound();
   }
@@ -30,7 +44,7 @@ export default async function HalamanUbahProduk({ params }) {
     <div className="flex flex-col gap-6 py-8">
       <NavAdmin />
       <h1 className="text-2xl font-extrabold">Ubah produk</h1>
-      <FormUbahProduk produk={produk} />
+      <FormUbahProduk produk={produk} daftarKategori={daftarKategori} />
     </div>
   );
 }

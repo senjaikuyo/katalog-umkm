@@ -4,8 +4,12 @@ import { useState } from "react";
 import { toko } from "@/lib/toko";
 import { formatRupiah } from "@/lib/format";
 
+import { useKeranjang } from "@/lib/KeranjangContext";
+import { catatKlikWAAction } from "@/app/produk/actions";
+
 // US-12: Pengunjung memilih jumlah dan varian sebelum memesan via WhatsApp
-export default function KotakPemesanan({ produk, daftarVarian = [] }) {
+export default function KotakPemesanan({ produk, daftarVarian = [], habis = false }) {
+  const { tambahItem } = useKeranjang();
   const [jumlah, setJumlah] = useState(1);
   const [varianTerpilih, setVarianTerpilih] = useState(
     daftarVarian.length > 0 ? daftarVarian[0] : null
@@ -21,11 +25,16 @@ export default function KotakPemesanan({ produk, daftarVarian = [] }) {
     setJumlah(jumlah + 1);
   };
 
-  const hargaSatuan = varianTerpilih?.harga ?? produk.harga;
+  const hargaSatuan = varianTerpilih?.harga ?? (produk.harga_diskon || produk.harga);
   const totalHarga = hargaSatuan * jumlah;
 
   // Format pesan WhatsApp lengkap dengan jumlah & varian
-  const bagianVarian = varianTerpilih ? ` (Varian: ${varianTerpilih.nama_varian || varianTerpilih})` : "";
+  const namaVarian = varianTerpilih
+    ? typeof varianTerpilih === "object"
+      ? varianTerpilih.nama || varianTerpilih.nama_varian
+      : varianTerpilih
+    : null;
+  const bagianVarian = namaVarian ? ` (Varian: ${namaVarian})` : "";
   const teksPesan = `Halo ${toko.nama}, saya ingin memesan ${produk.nama}${bagianVarian} sebanyak ${jumlah} buah. Total: ${formatRupiah(totalHarga)}.`;
   const urlWhatsApp = `https://wa.me/${toko.nomorWhatsApp}?text=${encodeURIComponent(teksPesan)}`;
 
@@ -42,14 +51,15 @@ export default function KotakPemesanan({ produk, daftarVarian = [] }) {
             value={typeof varianTerpilih === "object" ? varianTerpilih?.id : varianTerpilih}
             onChange={(e) => {
               const terpilih = daftarVarian.find(
-                (v) => (typeof v === "object" ? String(v.id) : v) === e.target.value
+                (v) => (typeof v === "object" ? String(v.id) : String(v)) === e.target.value
               );
               setVarianTerpilih(terpilih || null);
             }}
             className="w-full rounded-lg border border-garis bg-latar px-3 py-2 text-sm text-teks focus:border-utama focus:outline-none"
           >
             {daftarVarian.map((v) => {
-              const label = typeof v === "object" ? `${v.nama_varian} - ${formatRupiah(v.harga)}` : v;
+              const namaLabel = typeof v === "object" ? (v.nama || v.nama_varian) : v;
+              const label = typeof v === "object" ? `${namaLabel} - ${formatRupiah(v.harga)}` : v;
               const val = typeof v === "object" ? v.id : v;
               return (
                 <option key={val} value={val}>
@@ -92,15 +102,39 @@ export default function KotakPemesanan({ produk, daftarVarian = [] }) {
         <span className="text-lg font-bold text-utama">{formatRupiah(totalHarga)}</span>
       </div>
 
-      {/* Tombol Pesan WhatsApp */}
-      <a
-        href={urlWhatsApp}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-white transition-colors hover:bg-utama-gelap"
-      >
-        Pesan via WhatsApp
-      </a>
+      {/* Tombol Pesan WhatsApp & Keranjang */}
+      {habis ? (
+        <button
+          type="button"
+          disabled
+          className="inline-flex w-full items-center justify-center rounded-lg bg-garis px-5 py-3 font-semibold text-teks-lembut cursor-not-allowed"
+        >
+          Stok Habis
+        </button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <a
+            href={urlWhatsApp}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => catatKlikWAAction(produk.id)}
+            className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-white transition-colors hover:bg-utama-gelap"
+          >
+            Pesan via WhatsApp
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              for (let i = 0; i < jumlah; i++) {
+                tambahItem(produk);
+              }
+            }}
+            className="inline-flex w-full items-center justify-center rounded-lg border border-garis bg-latar px-5 py-2.5 text-sm font-semibold text-teks hover:border-utama hover:text-utama"
+          >
+            + Tambah ke Keranjang
+          </button>
+        </div>
+      )}
     </div>
   );
 }
