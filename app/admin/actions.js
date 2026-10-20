@@ -33,7 +33,7 @@ export async function logoutAction() {
   try {
     const supabase = await createAdminAuthClient();
     await supabase.auth.signOut();
-  } catch (err) {
+  } catch {
     // Tetap lanjut redirect jika ada kendala
   }
 
@@ -59,7 +59,6 @@ export async function gantiPasswordAction(prevState, formData) {
   try {
     const supabase = await createAdminAuthClient();
 
-    // Pastikan user sedang login
     const {
       data: { user },
       error: userError,
