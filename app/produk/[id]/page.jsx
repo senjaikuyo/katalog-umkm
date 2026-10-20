@@ -76,11 +76,23 @@ export default async function HalamanDetailProduk({ params }) {
         .from("ulasan")
         .select("*")
         .eq("produk_id", id)
-        .eq("ditampilkan", true)
+        .or("status.eq.approved,ditampilkan.eq.true")
         .order("created_at", { ascending: false });
       if (ulasanData) daftarUlasan = ulasanData;
     } catch {
-      // tabel ulasan belum ada
+      // fallback jika filter or gagal
+      try {
+        const { data: ulasanData } = await supabase
+          .from("ulasan")
+          .select("*")
+          .eq("produk_id", id)
+          .order("created_at", { ascending: false });
+        if (ulasanData) {
+          daftarUlasan = ulasanData.filter(
+            (u) => u.status === "approved" || u.ditampilkan === true
+          );
+        }
+      } catch {}
     }
 
     // US-48: Ambil varian

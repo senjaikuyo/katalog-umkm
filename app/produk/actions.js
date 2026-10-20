@@ -18,12 +18,17 @@ export async function tambahUlasanAction(formData) {
 
   try {
     const supabase = createServerClient();
-    const { error } = await supabase.from("ulasan").insert({
+    const payload = {
       produk_id: parseInt(produk_id, 10),
       nama,
       rating,
       komentar,
-      ditampilkan: false, // moderasi dulu
+    };
+    
+    // Sesuaikan apakah tabel memakai kolom 'ditampilkan' (boolean) atau 'status' ('pending'/'approved')
+    const { error } = await supabase.from("ulasan").insert({
+      ...payload,
+      status: "pending",
     });
 
     if (error) {
