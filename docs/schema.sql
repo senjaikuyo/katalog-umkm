@@ -56,9 +56,14 @@ create table if not exists public.ulasan (
   nama text not null,
   rating integer not null check (rating >= 1 and rating <= 5),
   komentar text,
-  created_at timestamptz not null default now(),
-  ditampilkan boolean not null default true
+  status text not null default 'pending',
+  ditampilkan boolean not null default true,
+  created_at timestamptz not null default now()
 );
+
+-- Pastikan kolom status dan ditampilkan ada jika tabel sudah pernah dibuat sebelumnya
+alter table public.ulasan add column if not exists status text not null default 'pending';
+alter table public.ulasan add column if not exists ditampilkan boolean not null default true;
 
 alter table public.ulasan enable row level security;
 
