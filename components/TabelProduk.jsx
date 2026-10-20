@@ -2,16 +2,19 @@ import { formatRupiah } from "@/lib/format";
 import Tombol from "@/components/Tombol";
 import TombolHapusProduk from "@/components/TombolHapusProduk";
 import TombolStatusProduk from "@/components/TombolStatusProduk";
+import TombolUrutanProduk from "@/components/TombolUrutanProduk";
+import Link from "next/link";
 
 export default function TabelProduk({ daftarProduk }) {
   return (
     <div className="overflow-x-auto rounded-2xl border border-garis">
-      <table className="w-full min-w-[560px] text-left text-sm">
+      <table className="w-full min-w-[620px] text-left text-sm">
         <thead className="bg-permukaan text-teks-lembut">
           <tr>
             <th className="px-4 py-3 font-semibold">Produk</th>
             <th className="px-4 py-3 font-semibold">Kategori</th>
             <th className="px-4 py-3 font-semibold">Harga</th>
+            <th className="px-4 py-3 font-semibold">Urutan</th>
             <th className="px-4 py-3 font-semibold">Status</th>
             <th className="px-4 py-3 font-semibold text-right">
               <span className="sr-only">Aksi</span>
@@ -30,10 +33,20 @@ export default function TabelProduk({ daftarProduk }) {
               <td className="px-4 py-3 text-teks-lembut">{produk.kategori}</td>
               <td className="px-4 py-3">{formatRupiah(produk.harga)}</td>
               <td className="px-4 py-3">
+                <TombolUrutanProduk id={produk.id} urutan={produk.urutan ?? 0} />
+              </td>
+              <td className="px-4 py-3">
                 <TombolStatusProduk id={produk.id} aktif={produk.aktif !== false} />
               </td>
               <td className="px-4 py-3">
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end items-center gap-2">
+                  <Link
+                    href={`/admin/produk/${produk.id}/varian`}
+                    className="rounded-lg border border-garis bg-latar px-2.5 py-1.5 text-xs font-semibold text-teks-lembut hover:border-utama hover:text-utama"
+                    title="Kelola varian produk"
+                  >
+                    Varian
+                  </Link>
                   <Tombol href={`/admin/produk/${produk.id}/ubah`} varian="garis">
                     Ubah
                   </Tombol>

@@ -419,3 +419,50 @@ export async function toggleAktifProdukAction(id, statusAktif) {
     return { error: `Terjadi kesalahan: ${err.message}` };
   }
 }
+
+export async function ubahUrutanProdukAction(id, delta) {
+  try {
+    const supabaseAuth = await createAdminAuthClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAuth.auth.getUser();
+
+    if (userError || !user) {
+      return { error: "Akses ditolak: Anda harus login sebagai admin." };
+    }
+
+    if (!id) {
+      return { error: "ID produk tidak valid." };
+    }
+
+    const supabase = createServerClient();
+    const { data: produk, error: fetchError } = await supabase
+      .from("produk")
+      .select("urutan")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !produk) {
+      return { error: "Produk tidak ditemukan." };
+    }
+
+    const urutanSekarang = produk.urutan ?? 0;
+    const urutanBaru = urutanSekarang + delta;
+
+    const { error: updateError } = await supabase
+      .from("produk")
+      .update({ urutan: urutanBaru })
+      .eq("id", id);
+
+    if (updateError) {
+      return { error: `Gagal mengubah urutan: ${updateError.message}` };
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { sukses: true, urutan: urutanBaru };
+  } catch (err) {
+    return { error: `Terjadi kesalahan: ${err.message}` };
+  }
+}
