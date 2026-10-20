@@ -119,3 +119,26 @@ Pengunjung dapat menambah/mengurangi jumlah produk dan memilih varian (jika ada)
 
 **Perbaikan:**
 Membuat komponen interaktif `KotakPemesanan` di halaman detail produk menggantikan tombol WhatsApp statis.
+
+## US-13: PWA manifest
+
+**Prompt:**
+Buat PWA manifest untuk aplikasi katalog UMKM.
+
+**Hasil:**
+File `public/manifest.json` dibuat dan `app/layout.jsx` diperbarui dengan `<link rel="manifest">` dan `<meta name="theme-color">`.
+
+**Perbaikan:**
+-
+
+## US-14: AI deskripsi produk
+
+**Prompt:**
+Buat fitur AI untuk generate deskripsi produk menggunakan Groq API.
+
+**Hasil:**
+Route Handler `app/api/generate-description/route.js` dibuat. Komponen `FormProduk.jsx` ditulis ulang bersih dengan tombol "✨ Buat deskripsi AI" yang memanggil route handler via fetch dan mengisi textarea deskripsi dengan hasilnya.
+
+**Perbaikan:**
+File `FormProduk.jsx` ditulis ulang karena korup (dua export default, import ganda). File `app/admin/actions.js` dibersihkan dari orphan code.
+
