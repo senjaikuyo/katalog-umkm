@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import TombolWhatsApp from "@/components/TombolWhatsApp";
+import KotakPemesanan from "@/components/KotakPemesanan";
 import { formatRupiah } from "@/lib/format";
 import { createServerClient } from "@/lib/supabase/server";
 
 export const revalidate = 0;
 
 // US-02: ambil satu produk dari Supabase berdasarkan id, di sisi server.
+// US-12: pengunjung memilih jumlah atau varian sebelum memesan via WhatsApp.
 export default async function HalamanDetailProduk({ params }) {
   const { id } = await params;
 
   let produk = null;
+  let daftarVarian = [];
+
   try {
     const supabase = createServerClient();
     const { data, error } = await supabase
@@ -23,6 +26,19 @@ export default async function HalamanDetailProduk({ params }) {
       notFound();
     }
     produk = data;
+
+    // Coba ambil varian jika tabel varian_produk ada
+    try {
+      const { data: varianData } = await supabase
+        .from("varian_produk")
+        .select("*")
+        .eq("produk_id", id);
+      if (varianData) {
+        daftarVarian = varianData;
+      }
+    } catch {
+      // Abaikan jika tabel varian belum dibuat di database
+    }
   } catch (err) {
     notFound();
   }
@@ -44,7 +60,7 @@ export default async function HalamanDetailProduk({ params }) {
           {formatRupiah(produk.harga)}
         </p>
         <p className="max-w-prose leading-relaxed text-teks-lembut">{produk.deskripsi}</p>
-        <TombolWhatsApp produk={produk} />
+        <KotakPemesanan produk={produk} daftarVarian={daftarVarian} />
       </div>
     </article>
   );

@@ -108,3 +108,14 @@ Pengunjung dapat menyaring produk berdasarkan kategori (pills) atau mencari nama
 
 **Perbaikan:**
 Membuat komponen `FilterKatalog` yang mengelola parameter URL `q` dan `kategori`, dan memperbarui `app/page.jsx` agar membaca `searchParams` secara asynchronous.
+
+## US-12 Pilih jumlah atau varian
+
+**Prompt:**
+Buat fitur pemilihan jumlah barang dan varian produk di halaman detail `/produk/[id]` sebelum memesan, serta memasukkan pilihan jumlah dan varian tersebut ke dalam draf pesan WhatsApp.
+
+**Hasil:**
+Pengunjung dapat menambah/mengurangi jumlah produk dan memilih varian (jika ada). Total harga terhitung otomatis dan pesan WhatsApp terisi lengkap dengan rincian varian, kuantitas, dan total harga.
+
+**Perbaikan:**
+Membuat komponen interaktif `KotakPemesanan` di halaman detail produk menggantikan tombol WhatsApp statis.
