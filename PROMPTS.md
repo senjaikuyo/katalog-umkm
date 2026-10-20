@@ -97,3 +97,14 @@ Tombol Hapus meminta konfirmasi sebelum menghapus, memanggil Server Action `hapu
 
 **Perbaikan:**
 Membuat komponen klien `TombolHapusProduk` dengan konfirmasi `window.confirm` dan menghubungkannya ke `hapusProdukAction`.
+
+## US-11 Filter kategori atau pencarian
+
+**Prompt:**
+Buat fitur filter kategori dan pencarian nama produk pada katalog publik di `/` yang diterapkan langsung di sisi server query database Supabase.
+
+**Hasil:**
+Pengunjung dapat menyaring produk berdasarkan kategori (pills) atau mencari nama produk (form pencarian), dengan query dinamis `ilike` dan `eq` di Supabase.
+
+**Perbaikan:**
+Membuat komponen `FilterKatalog` yang mengelola parameter URL `q` dan `kategori`, dan memperbarui `app/page.jsx` agar membaca `searchParams` secara asynchronous.
