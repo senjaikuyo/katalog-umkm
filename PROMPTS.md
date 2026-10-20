@@ -53,3 +53,14 @@ Catat prompt penting selama membangun aplikasi: apa yang kamu minta, hasilnya, d
 ## Debugging dan fitur bonus
 
 Tambahkan bagian baru untuk setiap error yang kamu perbaiki atau fitur bonus yang kamu kerjakan.
+
+## US-07 List Produk
+
+**Prompt:**
+Ambil data produk pada halaman `/admin` dari database Supabase bukan dari data contoh.
+
+**Hasil:**
+Halaman `/admin` berhasil membaca tabel `produk` via Server Component dengan pengurutan terbaru, serta menangani kondisi error dan daftar produk kosong.
+
+**Perbaikan:**
+Mengganti impor `produkContoh` dari `lib/data-contoh` dengan pemanggilan `createServerClient().from("produk").select("*")`.
