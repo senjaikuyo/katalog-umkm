@@ -26,7 +26,7 @@ export default async function HalamanAdmin({ searchParams }) {
       query = query.ilike("nama", `%${kataKunci}%`);
     }
 
-    query = query.order("created_at", { ascending: false });
+    query = query.order("urutan", { ascending: true }).order("created_at", { ascending: false });
     query = query.range(offset, offset + LIMIT - 1);
 
     const { data, error, count } = await query;

@@ -59,7 +59,7 @@ export default async function HalamanKatalog({ searchParams }) {
     } else if (urutAktif === "harga_desc") {
       query = query.order("harga", { ascending: false });
     } else {
-      query = query.order("created_at", { ascending: false });
+      query = query.order("urutan", { ascending: true }).order("created_at", { ascending: false });
     }
 
     // Paginasi

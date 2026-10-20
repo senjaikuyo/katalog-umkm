@@ -19,10 +19,10 @@ export async function generateMetadata({ params }) {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("produk")
-      .select("nama,deskripsi,foto_url")
+      .select("nama,deskripsi,foto_url,aktif")
       .eq("id", id)
       .maybeSingle();
-    if (!data) return {};
+    if (!data || data.aktif === false) return {};
     return {
       title: data.nama,
       description: data.deskripsi || data.nama,
@@ -53,7 +53,7 @@ export default async function HalamanDetailProduk({ params }) {
       .eq("id", id)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error || !data || data.aktif === false) {
       notFound();
     }
     produk = data;
@@ -65,6 +65,7 @@ export default async function HalamanDetailProduk({ params }) {
         .select("*")
         .eq("kategori", produk.kategori)
         .neq("id", id)
+        .neq("aktif", false)
         .limit(4);
       if (terkaitData) produkTerkait = terkaitData;
     }
@@ -82,12 +83,20 @@ export default async function HalamanDetailProduk({ params }) {
       // tabel ulasan belum ada
     }
 
-    // US-48: Coba ambil varian
+    // US-48: Ambil varian
     try {
-      const { data: varianData } = await supabase
-        .from("varian")
+      let { data: varianData } = await supabase
+        .from("varian_produk")
         .select("*")
-        .eq("produk_id", id);
+        .eq("produk_id", id)
+        .order("harga", { ascending: true });
+      if (!varianData || varianData.length === 0) {
+        const { data: fallbackVarian } = await supabase
+          .from("varian")
+          .select("*")
+          .eq("produk_id", id);
+        if (fallbackVarian) varianData = fallbackVarian;
+      }
       if (varianData) daftarVarian = varianData;
     } catch {
       // Abaikan jika tabel varian belum dibuat
