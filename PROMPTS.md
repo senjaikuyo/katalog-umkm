@@ -142,3 +142,26 @@ Route Handler `app/api/generate-description/route.js` dibuat. Komponen `FormProd
 **Perbaikan:**
 File `FormProduk.jsx` ditulis ulang karena korup (dua export default, import ganda). File `app/admin/actions.js` dibersihkan dari orphan code.
 
+
+## US-15: Urutkan produk
+
+**Prompt:**
+Tambah fitur urutan produk (termurah, termahal, terbaru) di katalog.
+
+**Hasil:**
+Select urutan ditambahkan di `FilterKatalog.jsx`. `app/page.jsx` membaca `searchParams.urut` dan menerapkan `.order()` yang sesuai.
+
+**Perbaikan:**
+-
+
+## US-16: Paginasi
+
+**Prompt:**
+Tambah paginasi berbasis URL dengan 12 produk per halaman.
+
+**Hasil:**
+`app/page.jsx` menggunakan `.range()` Supabase dengan parameter `halaman`. Navigasi halaman ditampilkan dengan angka, ellipsis, dan tombol prev/next.
+
+**Perbaikan:**
+-
+
