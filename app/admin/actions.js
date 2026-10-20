@@ -190,3 +190,38 @@ export async function ubahProdukAction(prevState, formData) {
 
   redirect("/admin");
 }
+
+export async function hapusProdukAction(id) {
+  try {
+    const supabaseAuth = await createAdminAuthClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAuth.auth.getUser();
+
+    if (userError || !user) {
+      return { error: "Akses ditolak: Anda harus login sebagai admin." };
+    }
+
+    if (!id) {
+      return { error: "ID produk tidak valid." };
+    }
+
+    const supabase = createServerClient();
+    const { error: deleteError } = await supabase
+      .from("produk")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      return { error: `Gagal menghapus produk: ${deleteError.message}` };
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    revalidatePath(`/produk/${id}`);
+    return { sukses: true };
+  } catch (err) {
+    return { error: `Terjadi kesalahan: ${err.message}` };
+  }
+}

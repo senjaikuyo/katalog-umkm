@@ -86,3 +86,14 @@ Halaman `/admin/produk/[id]/ubah` berhasil memuat data lama dari Supabase, meren
 
 **Perbaikan:**
 Mengganti `cariProdukContoh` dengan query Supabase `eq("id", id)`, membuat Server Action `ubahProdukAction`, dan menghapus `CatatanBelumAktif`.
+
+## US-10 Hapus produk
+
+**Prompt:**
+Buat fitur hapus produk pada tombol Hapus di `/admin` dengan konfirmasi dan eksekusi penghapusan di database Supabase yang terlindungi login di server.
+
+**Hasil:**
+Tombol Hapus meminta konfirmasi sebelum menghapus, memanggil Server Action `hapusProdukAction` yang memverifikasi autentikasi admin di server, menghapus baris dari Supabase, dan merevalidasi cache.
+
+**Perbaikan:**
+Membuat komponen klien `TombolHapusProduk` dengan konfirmasi `window.confirm` dan menghubungkannya ke `hapusProdukAction`.
