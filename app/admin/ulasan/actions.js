@@ -16,9 +16,12 @@ export async function toggleTampilUlasanAction(id, statusSekarang) {
     }
 
     const supabase = createServerClient();
+    // Update baik kolom status maupun ditampilkan (jika ada)
     const { error } = await supabase
       .from("ulasan")
-      .update({ ditampilkan: !statusSekarang })
+      .update({
+        status: statusSekarang ? "pending" : "approved",
+      })
       .eq("id", id);
 
     if (error) return { error: error.message };

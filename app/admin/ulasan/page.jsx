@@ -54,7 +54,7 @@ export default async function HalamanUlasanAdmin() {
                   <td className="px-4 py-3 text-yellow-500 font-bold">{"★".repeat(u.rating)}</td>
                   <td className="max-w-xs truncate px-4 py-3 text-teks-lembut">{u.komentar || "-"}</td>
                   <td className="px-4 py-3">
-                    {u.ditampilkan ? (
+                    {u.status === "approved" || u.ditampilkan ? (
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
                         Tampil
                       </span>
@@ -65,7 +65,10 @@ export default async function HalamanUlasanAdmin() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <TombolAksiUlasan id={u.id} ditampilkan={u.ditampilkan} />
+                    <TombolAksiUlasan
+                      id={u.id}
+                      ditampilkan={u.status === "approved" || Boolean(u.ditampilkan)}
+                    />
                   </td>
                 </tr>
               ))
