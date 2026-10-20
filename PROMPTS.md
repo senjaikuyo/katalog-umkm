@@ -64,3 +64,14 @@ Halaman `/admin` berhasil membaca tabel `produk` via Server Component dengan pen
 
 **Perbaikan:**
 Mengganti impor `produkContoh` dari `lib/data-contoh` dengan pemanggilan `createServerClient().from("produk").select("*")`.
+
+## US-08 Tambah produk
+
+**Prompt:**
+Buat fitur tambah produk baru di `/admin/produk/baru` dengan form yang menyimpan ke database dan terlindungi auth admin di server.
+
+**Hasil:**
+Halaman `/admin/produk/baru` berhasil menggunakan `FormProduk` yang terhubung ke Server Action `tambahProdukAction`, memvalidasi data di server, mengecek sesi admin, menyimpan ke Supabase, dan redirect ke `/admin`.
+
+**Perbaikan:**
+Menghubungkan `useActionState` ke form, memvalidasi input di server, dan menghapus `CatatanBelumAktif`.

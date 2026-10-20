@@ -1,11 +1,18 @@
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
 
-// Dipakai untuk tambah produk (US-08) dan ubah produk (US-09). Keduanya bonus di jalur offline.
+// Dipakai untuk tambah produk (US-08) dan ubah produk (US-09).
 // Nama field sama dengan kolom tabel "produk".
-export default function FormProduk({ produk = {}, labelTombol }) {
+export default function FormProduk({
+  produk = {},
+  labelTombol,
+  action,
+  isPending = false,
+  tombolTambahan = null,
+}) {
   return (
-    <form className="flex max-w-xl flex-col gap-4">
+    <form action={action} className="flex max-w-xl flex-col gap-4">
+      {produk?.id && <input type="hidden" name="id" value={produk.id} />}
       <Input label="Nama produk" name="nama" defaultValue={produk.nama} required />
       <Input
         label="Harga (Rp)"
@@ -23,8 +30,11 @@ export default function FormProduk({ produk = {}, labelTombol }) {
         defaultValue={produk.foto_url}
       />
       <Input label="Deskripsi" name="deskripsi" textarea defaultValue={produk.deskripsi} />
+      {tombolTambahan}
       <div className="flex gap-3">
-        <Tombol type="submit">{labelTombol}</Tombol>
+        <Tombol type="submit" disabled={isPending}>
+          {isPending ? "Menyimpan..." : labelTombol}
+        </Tombol>
         <Tombol href="/admin" varian="garis">
           Batal
         </Tombol>

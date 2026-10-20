@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAdminAuthClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+import { createAdminAuthClient, createServerClient } from "@/lib/supabase/server";
 
 export async function loginAction(prevState, formData) {
   const email = formData.get("email");
@@ -80,4 +81,53 @@ export async function gantiPasswordAction(prevState, formData) {
   } catch (err) {
     return { error: `Terjadi kesalahan: ${err.message}` };
   }
+}
+
+export async function tambahProdukAction(prevState, formData) {
+  try {
+    const supabaseAuth = await createAdminAuthClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAuth.auth.getUser();
+
+    if (userError || !user) {
+      return { error: "Akses ditolak: Anda harus login sebagai admin." };
+    }
+
+    const nama = formData.get("nama")?.toString().trim();
+    const hargaStr = formData.get("harga")?.toString().trim();
+    const kategori = formData.get("kategori")?.toString().trim() || null;
+    const foto_url = formData.get("foto_url")?.toString().trim() || null;
+    const deskripsi = formData.get("deskripsi")?.toString().trim() || null;
+
+    if (!nama) {
+      return { error: "Nama produk wajib diisi." };
+    }
+
+    const harga = parseInt(hargaStr, 10);
+    if (isNaN(harga) || harga < 0) {
+      return { error: "Harga harus berupa angka 0 atau lebih." };
+    }
+
+    const supabase = createServerClient();
+    const { error: insertError } = await supabase.from("produk").insert({
+      nama,
+      harga,
+      kategori,
+      foto_url: foto_url || "/produk/kopi.svg",
+      deskripsi,
+    });
+
+    if (insertError) {
+      return { error: `Gagal menyimpan produk: ${insertError.message}` };
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+  } catch (err) {
+    return { error: `Terjadi kesalahan: ${err.message}` };
+  }
+
+  redirect("/admin");
 }
