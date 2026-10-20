@@ -1,6 +1,8 @@
 import Link from "next/link";
 import KartuProduk from "@/components/KartuProduk";
 import FilterKatalog from "@/components/FilterKatalog";
+import TerakhirDilihat from "@/components/TerakhirDilihat";
+import BannerBeranda from "@/components/BannerBeranda";
 import { toko } from "@/lib/toko";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -99,6 +101,9 @@ export default async function HalamanKatalog({ searchParams }) {
         <p className="mt-4 text-sm text-teks-lembut">{toko.jamBuka}</p>
       </section>
 
+      {/* US-42: Banner Promo */}
+      <BannerBeranda />
+
       <section aria-labelledby="judul-produk" className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 id="judul-produk" className="text-xl font-bold">
@@ -176,6 +181,9 @@ export default async function HalamanKatalog({ searchParams }) {
           </>
         )}
       </section>
+
+      {/* US-36: Terakhir dilihat */}
+      <TerakhirDilihat />
     </>
   );
 }

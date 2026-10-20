@@ -122,6 +122,14 @@ export async function tambahProdukAction(prevState, formData) {
       return { error: `Gagal menyimpan produk: ${insertError.message}` };
     }
 
+    try {
+      await supabase.from("aktivitas_log").insert({
+        user_email: user.email,
+        aksi: "Tambah Produk",
+        detail: `Menambah produk "${nama}" (Rp ${harga})`,
+      });
+    } catch {}
+
     revalidatePath("/admin");
     revalidatePath("/");
   } catch (err) {
@@ -179,6 +187,14 @@ export async function ubahProdukAction(prevState, formData) {
       return { error: `Gagal memperbarui produk: ${updateError.message}` };
     }
 
+    try {
+      await supabase.from("aktivitas_log").insert({
+        user_email: user.email,
+        aksi: "Ubah Produk",
+        detail: `Mengubah produk ID ${id}: "${nama}"`,
+      });
+    } catch {}
+
     revalidatePath("/admin");
     revalidatePath("/");
     revalidatePath(`/produk/${id}`);
@@ -215,6 +231,14 @@ export async function hapusProdukAction(id) {
     if (deleteError) {
       return { error: `Gagal menghapus produk: ${deleteError.message}` };
     }
+
+    try {
+      await supabase.from("aktivitas_log").insert({
+        user_email: user.email,
+        aksi: "Hapus Produk",
+        detail: `Menghapus produk ID ${id}`,
+      });
+    } catch {}
 
     revalidatePath("/admin");
     revalidatePath("/");
