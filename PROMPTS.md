@@ -317,7 +317,14 @@ Pembuatan template khusus `app/not-found.jsx` dan `app/loading.jsx`.
 
 ## US-29: Upload foto ke Supabase Storage
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Sediakan input file unggah foto produk pada form admin dan simpan langsung ke Supabase Storage bucket 'produk' di server, lengkapi dengan validasi tipe gambar dan batas ukuran 5 MB.
+
+**Hasil:**
+Form produk di panel admin mendukung input file foto langsung dari perangkat. Server Action memvalidasi MIME type (khusus file gambar) dan batas maksimal file 5 MB, mengunggah ke bucket Storage `produk` di server tanpa membocorkan API key di client, serta menyimpan public URL ke database produk.
+
+**Perbaikan:**
+Penambahan fungsi helper `uploadFotoProduk` di `app/admin/actions.js` dan input file pada `components/FormProduk.jsx`.
 
 ## US-30: Dashboard ringkasan admin
 
@@ -333,17 +340,24 @@ Pembuatan halaman `app/admin/dashboard/page.jsx` dan navigasi `NavAdmin.jsx`.
 ## US-31: Kelola kategori
 
 **Prompt:**
-Buat halaman daftar kategori admin di `/admin/kategori` yang menghitung jumlah produk pada setiap kategori dan menyediakan tautan langsung ke filter katalog.
+[SENDIRI] Buat modul manajemen kategori lengkap (tambah, ubah nama, hapus dengan proteksi pemakaian produk) di `/admin/kategori` dan gunakan daftar ini sebagai pilihan kategori di form produk.
 
 **Hasil:**
-Admin dapat memantau kategori produk yang ada, melihat jumlah produk aktif di tiap kategori, dan langsung membuka tampilan katalog publik per kategori.
+Halaman `/admin/kategori` menyediakan formulir tambah kategori baru, ubah nama kategori secara inline (sekaligus memperbarui produk terkait), dan tombol hapus yang memeriksa referensi pemakaian oleh produk agar kategori aktif tidak terhapus sembarangan. Form produk memuat saran kategori dari tabel ini.
 
 **Perbaikan:**
-Pembuatan rute `app/admin/kategori/page.jsx`.
+Pembuatan Server Actions `app/admin/kategori/actions.js`, komponen `KelolaKategori.jsx`, dan integrasi sinkronisasi kategori di `FormProduk.jsx`.
 
 ## US-32: Aktif atau nonaktifkan produk
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Implementasikan toggle status aktif/nonaktif produk di halaman admin, serta pastikan produk nonaktif tidak muncul di katalog publik dan memicu 404 pada halaman detail.
+
+**Hasil:**
+Admin dapat mengaktifkan atau menonaktifkan produk via `TombolStatusProduk`. Server Action `toggleAktifProdukAction` memperbarui kolom `aktif` di Supabase. Halaman katalog beranda `/`, `/kategori/[slug]`, dan `sitemap.xml` menyaring `neq("aktif", false)`, serta halaman detail `/produk/[id]` memanggil `notFound()` jika produk berstatus nonaktif.
+
+**Perbaikan:**
+Penyempurnaan guard `data.aktif === false` di `app/produk/[id]/page.jsx`, filter query di `app/kategori/[slug]/page.jsx`, dan penyesuaian query sitemap.
 
 ## US-33: Cari dan paginasi di list admin
 
@@ -358,7 +372,14 @@ Penambahan input pencarian, tombol filter, dan navigasi nomor halaman di `app/ad
 
 ## US-34: Validasi form admin di server
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Terapkan validasi form produk di sisi server dengan pesan error spesifik per-field di bawah input dan pertahankan nilai input yang sudah diisi pengguna saat terjadi error validasi.
+
+**Hasil:**
+Server Action `tambahProdukAction` dan `ubahProdukAction` memvalidasi kelengkapan nama dan kevalidan harga (angka non-negatif). Error validasi dikembalikan dalam objek `fieldErrors` dan dirender tepat di bawah input terkait dengan indikator border merah, sementara nilai input yang sudah diisi dipertahankan via objek `values`.
+
+**Perbaikan:**
+Update komponen `components/Input.jsx` dengan properti `error`, penyempurnaan return state validasi pada `app/admin/actions.js`, dan binding nilai pada `components/FormProduk.jsx`.
 
 ## US-35: Ekspor produk ke CSV
 

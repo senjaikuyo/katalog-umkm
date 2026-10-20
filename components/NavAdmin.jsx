@@ -25,6 +25,9 @@ export default function NavAdmin() {
       <Link href="/admin/log" className="font-semibold hover:text-utama">
         Log
       </Link>
+      <Link href="/admin/pengguna" className="font-semibold hover:text-utama">
+        Admin
+      </Link>
       <Link href="/admin/password" className="font-semibold hover:text-utama">
         Ganti password
       </Link>
