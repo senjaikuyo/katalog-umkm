@@ -482,7 +482,14 @@ Pembuatan rute `app/admin/pengaturan/page.jsx`, komponen `FormPengaturan.jsx`, d
 
 ## US-44: Kelola akun admin
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Sediakan halaman kelola admin di `/admin/pengguna` untuk melihat daftar admin Supabase Auth, menambah admin baru, dan menghapus admin lain dengan pencegahan penghapusan akun sendiri.
+
+**Hasil:**
+Admin dapat melihat seluruh user admin terdaftar via `supabase.auth.admin.listUsers()`, menambahkan akun admin baru (email + password min. 8 karakter), serta menghapus admin lain. Sistem memproteksi akun yang sedang aktif login agar tidak dapat dihapus sendiri di server maupun di tampilan.
+
+**Perbaikan:**
+Pembuatan Server Actions `app/admin/pengguna/actions.js`, komponen `KelolaAdmin.jsx`, rute `app/admin/pengguna/page.jsx`, dan penambahan tautan di `NavAdmin.jsx`.
 
 ## US-45: Log aktivitas admin
 
@@ -508,11 +515,25 @@ Pembuatan rute `app/admin/impor/page.jsx`, komponen `FormImporCsv.jsx`, parser C
 
 ## US-47: Atur urutan tampil produk
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Tambahkan kontrol naik/turun urutan tampil produk di tabel admin dan pastikan katalog publik mengikuti urutan kolom `urutan` secara ascending.
+
+**Hasil:**
+Tabel produk di `/admin` dilengkapi tombol pengatur urutan (▲ / ▼) via Server Action `ubahUrutanProdukAction`. Query katalog publik pada beranda `/` dan `/admin` diprioritaskan berdasarkan kolom `urutan` ascending sebelum diurutkan berdasarkan `created_at` descending.
+
+**Perbaikan:**
+Pembuatan Server Action `ubahUrutanProdukAction` di `app/admin/actions.js`, komponen `TombolUrutanProduk.jsx`, pembaruan `TabelProduk.jsx`, dan penyesuaian query di `app/page.jsx`.
 
 ## US-48: Varian harga per ukuran
 
-*(Fitur diserahkan ke agent lain sesuai instruksi user)*
+**Prompt:**
+[SENDIRI] Sediakan modul pengelolaan varian per produk di `/admin/produk/[id]/varian`, tampilkan pilihan varian dinamis di halaman detail produk dengan penyesuaian harga satuan otomatis, dan sertakan nama varian terpilih ke dalam pesan WhatsApp.
+
+**Hasil:**
+Admin dapat membuka halaman varian dari tabel produk untuk menambah dan menghapus varian harga. Halaman detail `/produk/[id]` membaca varian dari database Supabase (`varian_produk`). Komponen `KotakPemesanan.jsx` menyesuaikan harga total saat varian dipilih dan mencantumkan varian terpilih ke dalam draft pesan WhatsApp.
+
+**Perbaikan:**
+Pembuatan Server Actions `app/admin/produk/[id]/varian/actions.js`, komponen `KelolaVarian.jsx`, rute `app/admin/produk/[id]/varian/page.jsx`, penautan di `TabelProduk.jsx`, serta sinkronisasi query tabel `varian_produk` di `app/produk/[id]/page.jsx`.
 
 ## US-49: Halaman per kategori
 
